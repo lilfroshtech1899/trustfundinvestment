@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trust Fund - Access</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .brand-logo {
+            font-size: 2.2rem;
+            font-weight: 800;
+            letter-spacing: 1px;
+            margin-bottom: 40px;
+            color: #ffffff;
+        }
+
+        .brand-logo span {
+            color: #4facfe;
+        }
+
+        .form-card {
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            position: relative;
+            padding: 40px 30px;
+        }
+
+        /* Top angled tab indicator for active state style */
+        .form-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(to right, #00f2fe, #4facfe);
+        }
+
+        .form-toggle-header {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 25px;
+        }
+
+        .toggle-tab-badge {
+            background: #3a4f5c;
+            color: #ffffff;
+            padding: 6px 16px;
+            border-radius: 4px 4px 0 0;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .form-group {
+            text-align: left;
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.9rem;
+            color: #4a5568;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .input-wrapper {
+            display: flex;
+            align-items: center;
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            border-radius: 25px;
+            padding: 0 15px;
+            transition: all 0.3s ease;
+        }
+
+        .input-wrapper:focus-within {
+            border-color: #4facfe;
+            background: #ffffff;
+            box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.15);
+        }
+
+        .prefix {
+            color: #718096;
+            font-size: 0.95rem;
+            padding-right: 10px;
+            border-right: 1px solid #cbd5e1;
+            margin-right: 10px;
+            user-select: none;
+        }
+
+        .input-wrapper input {
+            width: 100%;
+            border: none;
+            background: transparent;
+            padding: 14px 0;
+            font-size: 0.95rem;
+            color: #1a202c;
+            outline: none;
+        }
+
+        .password-toggle {
+            cursor: pointer;
+            color: #a0aec0;
+            margin-left: 10px;
+            user-select: none;
+        }
+
+        .password-toggle:hover {
+            color: #4facfe;
+        }
+
+        .submit-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+            box-shadow: 0 4px 15px rgba(79, 172, 254, 0.3);
+            transition: transform 0.2s ease, opacity 0.2s ease;
+        }
+
+        .submit-btn:hover {
+            opacity: 0.95;
+        }
+
+        .submit-btn:active {
+            transform: scale(0.98);
+        }
+
+        .footer-text {
+            margin-top: 25px;
+            font-size: 0.9rem;
+            color: #718096;
+        }
+
+        .footer-text a {
+            color: #dd6b20;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .footer-text a:hover {
+            text-decoration: underline;
+        }
+
+        /* Utility classes to toggle forms */
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="brand-logo">TRUST <span>FUND</span></div>
+
+        <div class="form-card">
+            
+            <form id="loginForm">
+                <div class="form-toggle-header">
+                    <span class="toggle-tab-badge">Login</span>
+                </div>
+
+                <div class="form-group">
+                    <label>Phone Number</label>
+                    <div class="input-wrapper">
+                        <span class="prefix">+234</span>
+                        <input type="tel" id="loginPhone" placeholder="Enter your phone number" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Password</label>
+                    <div class="input-wrapper">
+                        <input type="password" id="loginPassword" placeholder="Enter your password" required>
+                        <span class="password-toggle" onclick="togglePassword('loginPassword')">👁️</span>
+                    </div>
+                </div>
+
+                <button type="submit" class="submit-btn">Login Now</button>
+
+                <div class="footer-text">
+                    Don't have an account? <a href="#" onclick="switchForm('register')">Sign Up</a>
+                </div>
+            </form>
+
+            <form id="registerForm" class="hidden">
+                <div class="form-toggle-header">
+                    <span class="toggle-tab-badge">Register</span>
+                </div>
+
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <div class="input-wrapper">
+                        <input type="text" id="regName" placeholder="Enter your full name" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Phone Number</label>
+                    <div class="input-wrapper">
+                        <span class="prefix">+234</span>
+                        <input type="tel" id="regPhone" placeholder="Enter your phone number" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Create Password</label>
+                    <div class="input-wrapper">
+                        <input type="password" id="regPassword" placeholder="Minimum 6 characters" required>
+                        <span class="password-toggle" onclick="togglePassword('regPassword')">👁️</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Confirm Password</label>
+                    <div class="input-wrapper">
+                        <input type="password" id="confirmPassword" placeholder="Repeat your password" required>
+                        <span class="password-toggle" onclick="togglePassword('confirmPassword')">👁️</span>
+                    </div>
+                </div>
+
+                <button type="submit" class="submit-btn">Register Now</button>
+
+                <div class="footer-text">
+                    Already have an account? <a href="" onclick="switchForm('login')">Login</a>
+                </div>
+            </form>
+
+        </div>
+    </div>
+
+    <script>
+    function getAccounts() {
+        try { return JSON.parse(localStorage.getItem('tf_accounts')) || {}; }
+        catch(e) { return {}; }
+    }
+
+    function saveAccounts(a) {
+        localStorage.setItem('tf_accounts', JSON.stringify(a));
+    }
+
+    function generateRefCode() {
+        return String(100000 + Math.floor(Math.random() * 900000));
+    }
+
+    function switchForm(formType) {
+        document.getElementById('loginForm').classList.toggle('hidden', formType !== 'login');
+        document.getElementById('registerForm').classList.toggle('hidden', formType !== 'register');
+    }
+
+    function togglePassword(inputId) {
+        var input = document.getElementById(inputId);
+        input.type = input.type === 'password' ? 'text' : 'password';
+    }
+
+    function showError(formId, msg) {
+        var existing = document.querySelector('#' + formId + ' .form-error');
+        if (existing) existing.remove();
+        var el = document.createElement('div');
+        el.className = 'form-error';
+        el.style.cssText = 'color:#e53e3e;font-size:0.8rem;margin-top:8px;text-align:center;font-weight:600;';
+        el.textContent = msg;
+        document.querySelector('#' + formId + ' .submit-btn').after(el);
+    }
+
+    function clearErrors() {
+        document.querySelectorAll('.form-error').forEach(function(e) { e.remove(); });
+    }
+
+    var urlParams = new URLSearchParams(window.location.search);
+    var referrerCode = urlParams.get('ref');
+    if (referrerCode) {
+        localStorage.setItem('pending_referrer', referrerCode);
+    }
+
+    localStorage.removeItem('tf_session');
+
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        clearErrors();
+        var phone = document.getElementById('loginPhone').value.trim();
+        var password = document.getElementById('loginPassword').value.trim();
+        if (!phone) { showError('loginForm', 'Please enter your phone number'); return; }
+        if (!password) { showError('loginForm', 'Please enter your password'); return; }
+        var accounts = getAccounts();
+        var account = accounts[phone];
+        if (!account) { showError('loginForm', 'Account not found. Please sign up.'); return; }
+        if (account.password !== password) { showError('loginForm', 'Incorrect password'); return; }
+        localStorage.setItem('tf_session', phone);
+        window.location.href = 'dashborad.html';
+    });
+
+    document.getElementById('registerForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        clearErrors();
+        var name = document.getElementById('regName').value.trim();
+        var phone = document.getElementById('regPhone').value.trim();
+        var password = document.getElementById('regPassword').value.trim();
+        var confirm = document.getElementById('confirmPassword').value.trim();
+
+        if (!name) { showError('registerForm', 'Please enter your full name'); return; }
+        if (!phone) { showError('registerForm', 'Please enter your phone number'); return; }
+        if (phone.length < 10) { showError('registerForm', 'Please enter a valid phone number (at least 10 digits)'); return; }
+        if (!password) { showError('registerForm', 'Please create a password'); return; }
+        if (password.length < 6) { showError('registerForm', 'Password must be at least 6 characters'); return; }
+        if (password !== confirm) { showError('registerForm', 'Passwords do not match'); return; }
+
+        var accounts = getAccounts();
+        if (accounts[phone]) { showError('registerForm', 'Phone number already registered. Please login.'); return; }
+
+        var refCode = generateRefCode();
+        var refBonus = 0;
+
+        var pendingRef = localStorage.getItem('pending_referrer');
+        if (pendingRef) {
+            for (var p in accounts) {
+                if (accounts[p].refCode === pendingRef) {
+                    accounts[p].balance = (accounts[p].balance || 0) + 500;
+                    if (!accounts[p].transactions) accounts[p].transactions = [];
+                    accounts[p].transactions.push({
+                        type: 'deposit',
+                        amount: 500,
+                        date: new Date().toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
+                        note: 'Referral bonus from ' + name
+                    });
+                    refBonus = 500;
+                    break;
+                }
+            }
+            localStorage.removeItem('pending_referrer');
+        }
+
+        accounts[phone] = {
+            username: name,
+            phone: phone,
+            password: password,
+            refCode: refCode,
+            balance: 1000 + refBonus,
+            createdAt: Date.now(),
+            transactions: [],
+            investments: []
+        };
+
+        accounts[phone].transactions.push({
+            type: 'deposit',
+            amount: 1000 + refBonus,
+            date: new Date().toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
+            note: refBonus > 0 ? 'Signup bonus + referral bonus' : 'Signup bonus'
+        });
+
+        saveAccounts(accounts);
+        localStorage.setItem('tf_session', phone);
+        localStorage.setItem('is_new_signup', 'true');
+        window.location.href = 'dashborad.html';
+    });
+</script>
+</body>
+</html>

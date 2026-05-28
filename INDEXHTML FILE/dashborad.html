@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trust Funds - Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f4f7f6;
+            min-height: 100vh;
+            padding-bottom: 80px;
+            color: #2d3748;
+        }
+
+        /* Toast */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 300;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-width: 360px;
+            width: calc(100% - 40px);
+        }
+
+        .toast {
+            padding: 14px 16px;
+            border-radius: 10px;
+            color: #fff;
+            font-size: 0.85rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+            animation: toastIn 0.3s ease;
+        }
+
+        .toast.success { background: #38a169; }
+        .toast.error { background: #e53e3e; }
+        .toast.info { background: #4facfe; }
+        .toast-icon { font-size: 1.1rem; flex-shrink: 0; }
+
+        .toast-close {
+            margin-left: auto;
+            background: none;
+            border: none;
+            color: rgba(255,255,255,0.7);
+            cursor: pointer;
+            font-size: 1rem;
+            padding: 0 0 0 8px;
+        }
+
+        @keyframes toastIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes toastOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+        .toast.removing { animation: toastOut 0.25s ease forwards; }
+
+        /* Header Banner */
+        .header-banner {
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+            color: white;
+            padding: 20px 20px 30px;
+            border-bottom-left-radius: 24px;
+            border-bottom-right-radius: 24px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .brand-title {
+            font-size: 1.4rem;
+            font-weight: 800;
+            letter-spacing: 1px;
+        }
+
+        .brand-title span { color: #4facfe; }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #00f2fe, #4facfe);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-weight: 700;
+            font-size: 0.85rem;
+            flex-shrink: 0;
+        }
+
+        .header-user {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .header-user .user-name {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: rgba(255,255,255,0.9);
+        }
+
+        /* Metrics */
+        .metrics-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .metric-box { text-align: center; }
+
+        .metric-label {
+            font-size: 0.7rem;
+            color: #a0aec0;
+            margin-bottom: 4px;
+        }
+
+        .metric-value {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        /* Main Content */
+        .main-content {
+            padding: 20px 16px;
+            max-width: 480px;
+            margin: 0 auto;
+        }
+
+        /* Quick Actions */
+        .actions-card {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 20px 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .action-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            color: #4a5568;
+            cursor: pointer;
+        }
+
+        .action-icon-circle {
+            width: 48px;
+            height: 48px;
+            background: rgba(79, 172, 254, 0.1);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 6px;
+            transition: background 0.2s ease;
+        }
+
+        .action-icon-circle svg {
+            width: 22px;
+            height: 22px;
+            fill: #4facfe;
+        }
+
+        .action-item:hover .action-icon-circle {
+            background: rgba(79, 172, 254, 0.2);
+        }
+
+        .action-label {
+            font-size: 0.72rem;
+            font-weight: 600;
+        }
+
+        /* Feature Cards */
+        .feature-card {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: #1a202c;
+        }
+
+        .referral-link-box {
+            background: #f1f5f9;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            color: #2b6cb0;
+            font-weight: 600;
+            overflow-x: auto;
+            white-space: nowrap;
+            margin-bottom: 12px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .btn-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 10px;
+            border-radius: 20px;
+            border: none;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: center;
+            transition: opacity 0.2s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #4a5568;
+        }
+
+        .btn:hover { opacity: 0.9; }
+
+        .reward-info-text {
+            font-size: 0.82rem;
+            color: #718096;
+            margin-bottom: 12px;
+        }
+
+        /* Floating Actions */
+        .floating-actions {
+            position: fixed;
+            right: 15px;
+            top: 40%;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            z-index: 100;
+        }
+
+        .floating-btn {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            text-decoration: none;
+            font-size: 1.1rem;
+            transition: transform 0.2s ease;
+        }
+
+        .floating-btn:hover { transform: scale(1.1); }
+        .floating-btn.support { background: #ff9f43; }
+        .floating-btn.telegram { background: #29b6f6; }
+        .floating-btn.records { background: #4facfe; }
+
+        /* Bottom Nav */
+        .bottom-navbar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 65px;
+            background: #ffffff;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 99;
+        }
+
+        .nav-tab {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            color: #a0aec0;
+            font-size: 0.7rem;
+            font-weight: 500;
+        }
+
+        .nav-tab.active { color: #4facfe; }
+
+        .nav-tab svg {
+            width: 22px;
+            height: 22px;
+            fill: currentColor;
+            margin-bottom: 3px;
+        }
+
+        .nav-tab.center-tab {
+            position: relative;
+            top: -15px;
+            background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+            width: 54px;
+            height: 54px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white !important;
+            box-shadow: 0 4px 12px rgba(79, 172, 254, 0.4);
+        }
+
+        .nav-tab.center-tab svg { width: 26px; height: 26px; }
+
+        @media (max-width: 640px) {
+            .floating-actions {
+                right: 10px;
+                top: auto;
+                bottom: 80px;
+                flex-direction: row;
+                gap: 8px;
+            }
+            .floating-btn { width: 38px; height: 38px; font-size: 1rem; }
+            .header-user .user-name { display: none; }
+        }
+
+        @media (max-width: 400px) {
+            .actions-card { grid-template-columns: repeat(4, 1fr); gap: 6px; }
+            .action-icon-circle { width: 42px; height: 42px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+    <div class="floating-actions">
+        <a href="#" class="floating-btn telegram" title="Telegram">✈️</a>
+        <a href="#" class="floating-btn records" title="Records">📋</a>
+        <a href="#" class="floating-btn support" title="Support">🎧</a>
+    </div>
+
+    <div class="header-banner">
+        <div class="header-top">
+            <div class="brand-title">TRUST <span>FUNDS</span></div>
+            <div class="header-user">
+                <span class="user-name" id="headerUsername">John Doe</span>
+                <div class="user-avatar" id="headerAvatar">JD</div>
+            </div>
+        </div>
+
+        <div class="metrics-container">
+            <div class="metric-box">
+                <div class="metric-label">Recharge Balance</div>
+                <div class="metric-value" id="rechargeBalance">₦0.00</div>
+            </div>
+            <div class="metric-box">
+                <div class="metric-label">Product Income</div>
+                <div class="metric-value" id="productIncome">₦0.00</div>
+            </div>
+            <div class="metric-box">
+                <div class="metric-label">Withdrawal Balance</div>
+                <div class="metric-value" id="withdrawalBalance">₦0.00</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-content">
+
+        <div class="actions-card">
+            <a href="/deposit" class="action-item">
+                <div class="action-icon-circle">
+                    <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+                </div>
+                <span class="action-label">Recharge</span>
+            </a>
+            <a href="withdrawal.html" class="action-item">
+                <div class="action-icon-circle">
+                    <svg viewBox="0 0 24 24"><path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>
+                </div>
+                <span class="action-label">Withdraw</span>
+            </a>
+            <a href="#" class="action-item">
+                <div class="action-icon-circle">
+                    <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 1.34 5 3s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+                </div>
+                <span class="action-label">My Team</span>
+            </a>
+            <a href="#" class="action-item">
+                <div class="action-icon-circle">
+                    <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+                </div>
+                <span class="action-label">Telegram</span>
+            </a>
+        </div>
+
+        <div class="feature-card">
+            <div class="card-title">My Team</div>
+            <div class="reward-info-text" style="margin-bottom: 8px; font-weight: 600; color: #2d3748;">
+                Share your link & earn ₦500.00 per referral!
+            </div>
+            <div class="referral-link-box" id="inviteUrl">Generating your custom link...</div>
+            <div class="btn-row">
+                <button class="btn btn-secondary" onclick="copyLink()">Copy Link</button>
+                <button class="btn btn-primary" onclick="simulateNewReferral()">Simulate Invite (+₦500)</button>
+            </div>
+        </div>
+
+        <div class="feature-card">
+            <div class="card-title">Daily Check-in</div>
+            <div class="reward-info-text">Sign in to receive rewards. Daily check-in can receive fixed cash rewards instantly.</div>
+            <button class="btn btn-primary" style="width: 100%;" onclick="handleCheckin()">Check In Now</button>
+        </div>
+
+    </div>
+
+    <nav class="bottom-navbar">
+        <a href="dashborad.html" class="nav-tab active">
+            <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+            <span>Home</span>
+        </a>
+        <a href="invest.html" class="nav-tab">
+            <svg viewBox="0 0 24 24"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/></svg>
+            <span>Invest</span>
+        </a>
+        <a href="deposit.html" class="nav-tab center-tab">
+            <svg viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
+        </a>
+        <a href="withdrawal.html" class="nav-tab">
+            <svg viewBox="0 0 24 24"><path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>
+            <span>Withdraw</span>
+        </a>
+        <a href="index.html" class="nav-tab">
+            <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5-4-8-4z"/></svg>
+            <span>Account</span>
+        </a>
+    </nav>
+
+    <script>
+        function showToast(message, type) {
+            var container = document.getElementById('toastContainer');
+            var icons = { success: '✓', error: '✗', info: 'ℹ' };
+            var toast = document.createElement('div');
+            toast.className = 'toast ' + type;
+            toast.innerHTML = '<span class="toast-icon">' + (icons[type] || '') + '</span>' +
+                '<span>' + message + '</span>' + '<button class="toast-close">&times;</button>';
+            container.appendChild(toast);
+            toast.querySelector('.toast-close').addEventListener('click', function () {
+                toast.classList.add('removing');
+                setTimeout(function () { toast.remove(); }, 260);
+            });
+            setTimeout(function () {
+                if (toast.parentNode) {
+                    toast.classList.add('removing');
+                    setTimeout(function () { toast.remove(); }, 260);
+                }
+            }, 4000);
+        }
+
+        function getAccounts() {
+            try { return JSON.parse(localStorage.getItem('tf_accounts')) || {}; }
+            catch(e) { return {}; }
+        }
+
+        function getSession() {
+            return localStorage.getItem('tf_session') || '';
+        }
+
+        function getAccount() {
+            var phone = getSession();
+            var accounts = getAccounts();
+            return phone && accounts[phone] ? accounts[phone] : null;
+        }
+
+        function saveAccounts(accounts) {
+            localStorage.setItem('tf_accounts', JSON.stringify(accounts));
+        }
+
+        function processDailyIncome() {
+            var phone = getSession();
+            if (!phone) return;
+            var accounts = getAccounts();
+            var account = accounts[phone];
+            if (!account || !account.investments) return;
+            var changed = false;
+            var now = Date.now();
+            for (var i = 0; i < account.investments.length; i++) {
+                var inv = account.investments[i];
+                if (!inv.active) continue;
+                var elapsed = now - inv.lastPayout;
+                var cycles = Math.floor(elapsed / (24 * 60 * 60 * 1000));
+                if (cycles > 0) {
+                    var credit = cycles * inv.dailyIncome;
+                    account.balance = (account.balance || 0) + credit;
+                    inv.lastPayout = inv.lastPayout + cycles * (24 * 60 * 60 * 1000);
+                    if (!account.transactions) account.transactions = [];
+                    account.transactions.push({
+                        type: 'deposit',
+                        amount: credit,
+                        date: new Date().toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
+                        note: 'Daily income from ' + inv.plan
+                    });
+                    changed = true;
+                }
+            }
+            if (changed) {
+                accounts[phone] = account;
+                saveAccounts(accounts);
+            }
+        }
+
+        window.onload = function () {
+            processDailyIncome();
+
+            var isNewSignup = localStorage.getItem('is_new_signup');
+            var account = getAccount();
+
+            // If no session or account missing, redirect to login
+            if (!account) {
+                window.location.href = 'trustfund.html';
+                return;
+            }
+
+            if (isNewSignup === 'true') {
+                localStorage.removeItem('is_new_signup');
+                showToast('Welcome ' + account.username + '! ₦1,000 signup bonus credited!', 'success');
+            }
+
+            updateDashboardUI(account);
+        };
+
+        function updateDashboardUI(account) {
+            if (!account) account = getAccount();
+            if (!account) return;
+
+            var balance = account.balance || 0;
+            var code = account.refCode || '000000';
+
+            document.getElementById('headerUsername').innerText = account.username;
+            document.getElementById('headerAvatar').innerText = account.username.slice(0, 2).toUpperCase();
+            document.getElementById('rechargeBalance').innerText = '₦' + balance.toFixed(2);
+            document.getElementById('productIncome').innerText = '₦0.00';
+            document.getElementById('withdrawalBalance').innerText = '₦' + Math.max(0, balance * 0.8).toFixed(2);
+
+            var base = window.location.origin + window.location.pathname.replace('dashborad.html', 'trustfund.html');
+            document.getElementById('inviteUrl').innerText = base + '?ref=' + code;
+        }
+
+        function copyLink() {
+            var text = document.getElementById('inviteUrl').innerText.trim();
+            navigator.clipboard.writeText(text).then(function () {
+                showToast('Invite link copied!', 'success');
+            }).catch(function () {
+                showToast('Failed to copy', 'error');
+            });
+        }
+
+        function simulateNewReferral() {
+            var phone = getSession();
+            var accounts = getAccounts();
+            var account = accounts[phone];
+            if (!account) return;
+            account.balance = (account.balance || 0) + 500;
+            accounts[phone] = account;
+            saveAccounts(accounts);
+            updateDashboardUI(account);
+            showToast('₦500.00 referral bonus added!', 'success');
+        }
+
+        function handleCheckin() {
+            var phone = getSession();
+            var accounts = getAccounts();
+            var account = accounts[phone];
+            if (!account) return;
+            account.balance = (account.balance || 0) + 50;
+            accounts[phone] = account;
+            saveAccounts(accounts);
+            updateDashboardUI(account);
+            showToast('Daily check-in successful! +₦50.00', 'success');
+        }
+    </script>
+
+</body>
+</html>

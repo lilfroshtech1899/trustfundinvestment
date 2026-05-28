@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trust Funds - Account</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f4f7f6;
+            min-height: 100vh;
+            color: #2d3748;
+            padding-bottom: 80px;
+        }
+
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 300;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-width: 360px;
+            width: calc(100% - 40px);
+        }
+
+        .toast {
+            padding: 14px 16px;
+            border-radius: 10px;
+            color: #fff;
+            font-size: 0.85rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+            animation: toastIn 0.3s ease;
+        }
+
+        .toast.success { background: #38a169; }
+        .toast.error { background: #e53e3e; }
+        .toast.info { background: #4facfe; }
+        .toast-icon { font-size: 1.1rem; flex-shrink: 0; }
+
+        .toast-close {
+            margin-left: auto;
+            background: none;
+            border: none;
+            color: rgba(255,255,255,0.7);
+            cursor: pointer;
+            font-size: 1rem;
+            padding: 0 0 0 8px;
+        }
+
+        @keyframes toastIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes toastOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+        .toast.removing { animation: toastOut 0.25s ease forwards; }
+
+        /* Header */
+        .nav-header {
+            background: #ffffff;
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            border-bottom: 1px solid #e2e8f0;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: #4a5568;
+            margin-right: 12px;
+            text-decoration: none;
+            line-height: 1;
+        }
+
+        .page-title {
+            flex: 1;
+            text-align: center;
+            font-size: 1.05rem;
+            font-weight: 700;
+            text-transform: capitalize;
+            color: #1a202c;
+        }
+
+        .header-right { display: flex; align-items: center; }
+
+        /* Profile Banner */
+        .profile-banner {
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+            border-bottom-left-radius: 24px;
+            border-bottom-right-radius: 24px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .profile-avatar {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #00f2fe, #4facfe);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-weight: 700;
+            font-size: 1.6rem;
+            margin: 0 auto 12px;
+            box-shadow: 0 4px 15px rgba(79, 172, 254, 0.3);
+        }
+
+        .profile-name {
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+
+        .profile-phone {
+            font-size: 0.85rem;
+            color: #a0aec0;
+            margin-top: 4px;
+        }
+
+        .profile-badge {
+            display: inline-block;
+            margin-top: 10px;
+            background: rgba(79, 172, 254, 0.2);
+            color: #4facfe;
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 4px 14px;
+            border-radius: 20px;
+        }
+
+        /* Content */
+        .main-content {
+            padding: 20px 16px;
+            max-width: 480px;
+            margin: 0 auto;
+        }
+
+        .section-card {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+            margin-bottom: 16px;
+        }
+
+        .section-title {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #718096;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 14px;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+        }
+
+        .info-row:not(:last-child) {
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .info-row-label {
+            font-size: 0.85rem;
+            color: #4a5568;
+        }
+
+        .info-row-value {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #1a202c;
+            text-align: right;
+        }
+
+        .info-row-value .copy-badge {
+            display: inline-block;
+            margin-left: 6px;
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: #4facfe;
+            background: rgba(79, 172, 254, 0.1);
+            padding: 2px 8px;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        /* Action items */
+        .action-list { list-style: none; }
+
+        .action-item {
+            display: flex;
+            align-items: center;
+            padding: 14px 0;
+            text-decoration: none;
+            color: #2d3748;
+            cursor: pointer;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .action-item:last-child { border-bottom: none; }
+
+        .action-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 14px;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .action-icon.blue { background: rgba(79, 172, 254, 0.1); }
+        .action-icon.orange { background: rgba(255, 159, 67, 0.1); }
+        .action-icon.green { background: rgba(56, 161, 105, 0.1); }
+        .action-icon.red { background: rgba(229, 62, 62, 0.1); }
+
+        .action-text { flex: 1; }
+
+        .action-text-main {
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .action-text-sub {
+            font-size: 0.72rem;
+            color: #718096;
+            margin-top: 2px;
+        }
+
+        .action-arrow {
+            color: #a0aec0;
+            font-size: 1.1rem;
+            margin-left: 8px;
+        }
+
+        /* Logout Button */
+        .logout-section {
+            margin-top: 24px;
+            text-align: center;
+        }
+
+        .logout-btn {
+            width: 100%;
+            background: none;
+            border: 2px solid #e53e3e;
+            color: #e53e3e;
+            padding: 14px;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .logout-btn:hover {
+            background: #e53e3e;
+            color: #fff;
+        }
+
+        /* Logout Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 200;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-overlay.active { display: flex; }
+
+        .modal-box {
+            background: #fff;
+            border-radius: 16px;
+            padding: 28px 24px 24px;
+            width: 100%;
+            max-width: 380px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+            animation: modalIn 0.25s ease;
+            text-align: center;
+        }
+
+        @keyframes modalIn {
+            from { transform: scale(0.92) translateY(10px); opacity: 0; }
+            to { transform: scale(1) translateY(0); opacity: 1; }
+        }
+
+        .modal-icon {
+            font-size: 2.5rem;
+            margin-bottom: 12px;
+        }
+
+        .modal-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #1a202c;
+            margin-bottom: 6px;
+        }
+
+        .modal-subtitle {
+            font-size: 0.82rem;
+            color: #718096;
+            margin-bottom: 24px;
+        }
+
+        .modal-actions { display: flex; gap: 10px; }
+
+        .modal-btn {
+            flex: 1;
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: opacity 0.2s ease;
+        }
+
+        .modal-btn:hover { opacity: 0.85; }
+        .modal-btn-cancel { background: #edf2f7; color: #4a5568; }
+        .modal-btn-danger { background: #e53e3e; color: #fff; }
+        .modal-btn-confirm { background: linear-gradient(135deg,#00f2fe,#4facfe); color: #fff; }
+
+        /* Floating */
+        .floating-actions {
+            position: fixed;
+            right: 15px;
+            top: 40%;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            z-index: 100;
+        }
+
+        .floating-btn {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            text-decoration: none;
+            font-size: 1.1rem;
+            transition: transform 0.2s ease;
+        }
+
+        .floating-btn:hover { transform: scale(1.1); }
+        .floating-btn.support { background: #ff9f43; }
+        .floating-btn.telegram { background: #29b6f6; }
+        .floating-btn.records { background: #4facfe; }
+
+        /* Bottom Nav */
+        .bottom-navbar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 65px;
+            background: #ffffff;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 99;
+        }
+
+        .nav-tab {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            color: #a0aec0;
+            font-size: 0.7rem;
+            font-weight: 500;
+        }
+
+        .nav-tab.active { color: #4facfe; }
+
+        .nav-tab svg {
+            width: 22px;
+            height: 22px;
+            fill: currentColor;
+            margin-bottom: 3px;
+        }
+
+        .nav-tab.center-tab {
+            position: relative;
+            top: -15px;
+            background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+            width: 54px;
+            height: 54px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white !important;
+            box-shadow: 0 4px 12px rgba(79, 172, 254, 0.4);
+        }
+
+        .nav-tab.center-tab svg { width: 26px; height: 26px; }
+
+        @media (max-width: 640px) {
+            .floating-actions {
+                right: 10px;
+                top: auto;
+                bottom: 80px;
+                flex-direction: row;
+                gap: 8px;
+            }
+            .floating-btn { width: 38px; height: 38px; font-size: 1rem; }
+            .profile-avatar { width: 60px; height: 60px; font-size: 1.3rem; }
+        }
+
+        @media (max-width: 400px) {
+            .profile-name { font-size: 1.1rem; }
+            .section-card { padding: 16px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+    <div class="floating-actions">
+        <a href="#" class="floating-btn telegram" title="Telegram">✈️</a>
+        <a href="#" class="floating-btn records" title="Records">📋</a>
+        <a href="#" class="floating-btn support" title="Support">🎧</a>
+    </div>
+
+    <header class="nav-header">
+        <a href="dashborad.html" class="back-btn">❮</a>
+        <div class="page-title">account</div>
+        <div class="header-right"></div>
+    </header>
+
+    <div class="profile-banner">
+        <div class="profile-avatar" id="displayAvatar">JD</div>
+        <div class="profile-name" id="displayName">John Doe</div>
+        <div class="profile-phone" id="displayPhone">+234 801 234 5678</div>
+        <div class="profile-badge">Verified Account</div>
+    </div>
+
+    <main class="main-content">
+
+        <div class="section-card">
+            <div class="section-title">Account Details</div>
+            <div class="info-row">
+                <span class="info-row-label">Full Name</span>
+                <span class="info-row-value" id="infoName">John Doe</span>
+            </div>
+            <div class="info-row">
+                <span class="info-row-label">Phone Number</span>
+                <span class="info-row-value" id="infoPhone">+234 801 234 5678</span>
+            </div>
+            <div class="info-row">
+                <span class="info-row-label">Referral Code</span>
+                <span class="info-row-value">
+                    <span id="infoRefCode">------</span>
+                    <span class="copy-badge" onclick="copyRefCode()">Copy</span>
+                </span>
+            </div>
+            <div class="info-row">
+                <span class="info-row-label">Member Since</span>
+                <span class="info-row-value">May 2026</span>
+            </div>
+        </div>
+
+        <div class="section-card">
+            <div class="section-title">Settings</div>
+            <div class="action-list">
+                <div class="action-item">
+                    <div class="action-icon blue">👤</div>
+                    <div class="action-text">
+                        <div class="action-text-main">Edit Profile</div>
+                        <div class="action-text-sub">Update your personal information</div>
+                    </div>
+                    <span class="action-arrow">❯</span>
+                </div>
+                <div class="action-item">
+                    <div class="action-icon blue">🔒</div>
+                    <div class="action-text">
+                        <div class="action-text-main">Change Password</div>
+                        <div class="action-text-sub">Update your transaction password</div>
+                    </div>
+                    <span class="action-arrow">❯</span>
+                </div>
+                <div class="action-item">
+                    <div class="action-icon orange">🔔</div>
+                    <div class="action-text">
+                        <div class="action-text-main">Notifications</div>
+                        <div class="action-text-sub">Manage alert preferences</div>
+                    </div>
+                    <span class="action-arrow">❯</span>
+                </div>
+                <div class="action-item">
+                    <div class="action-icon green">📞</div>
+                    <div class="action-text">
+                        <div class="action-text-main">Support</div>
+                        <div class="action-text-sub">Contact customer service</div>
+                    </div>
+                    <span class="action-arrow">❯</span>
+                </div>
+                <div class="action-item">
+                    <div class="action-icon green">📜</div>
+                    <div class="action-text">
+                        <div class="action-text-main">Terms & Privacy</div>
+                        <div class="action-text-sub">Read our policies</div>
+                    </div>
+                    <span class="action-arrow">❯</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="logout-section">
+            <button class="logout-btn" onclick="showLogoutModal()">Logout</button>
+        </div>
+
+    </main>
+
+    <!-- Logout Confirmation Modal -->
+    <div class="modal-overlay" id="logoutModal">
+        <div class="modal-box">
+            <div class="modal-icon">🚪</div>
+            <div class="modal-title">Logout</div>
+            <div class="modal-subtitle">Are you sure you want to logout? You'll need to login again to access your account.</div>
+            <div class="modal-actions">
+                <button class="modal-btn modal-btn-cancel" id="logoutCancel">Cancel</button>
+                <button class="modal-btn modal-btn-danger" id="logoutConfirm">Yes, Logout</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Change Password Modal -->
+    <div class="modal-overlay" id="changePasswordModal">
+        <div class="modal-box" style="text-align:left;">
+            <div style="text-align:center;">
+                <div class="modal-icon">🔒</div>
+                <div class="modal-title">Change Password</div>
+                <div class="modal-subtitle">Enter your current password and set a new one</div>
+            </div>
+            <div style="margin-bottom:12px;">
+                <label style="font-size:0.8rem;font-weight:600;color:#4a5568;display:block;margin-bottom:4px;">Current Password</label>
+                <input type="password" id="currentPassword" placeholder="Enter current password" style="width:100%;padding:11px 14px;border:1px solid #e2e8f0;border-radius:10px;font-size:0.9rem;outline:none;">
+            </div>
+            <div style="margin-bottom:12px;">
+                <label style="font-size:0.8rem;font-weight:600;color:#4a5568;display:block;margin-bottom:4px;">New Password</label>
+                <input type="password" id="newPassword" placeholder="Enter new password" style="width:100%;padding:11px 14px;border:1px solid #e2e8f0;border-radius:10px;font-size:0.9rem;outline:none;">
+            </div>
+            <div style="margin-bottom:16px;">
+                <label style="font-size:0.8rem;font-weight:600;color:#4a5568;display:block;margin-bottom:4px;">Confirm New Password</label>
+                <input type="password" id="confirmNewPassword" placeholder="Confirm new password" style="width:100%;padding:11px 14px;border:1px solid #e2e8f0;border-radius:10px;font-size:0.9rem;outline:none;">
+            </div>
+            <div class="modal-actions">
+                <button class="modal-btn modal-btn-cancel" id="changePwCancel">Cancel</button>
+                <button class="modal-btn modal-btn-confirm" id="changePwConfirm" style="background:linear-gradient(135deg,#00f2fe,#4facfe);color:white;">Change Password</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notifications / Transaction History Modal -->
+    <div class="modal-overlay" id="notifModal">
+        <div class="modal-box" style="text-align:left;max-width:420px;max-height:80vh;display:flex;flex-direction:column;">
+            <div style="text-align:center;flex-shrink:0;">
+                <div class="modal-icon">🔔</div>
+                <div class="modal-title" style="margin-bottom:2px;">Notifications</div>
+                <div class="modal-subtitle" style="margin-bottom:14px;">Your deposit and withdrawal history</div>
+            </div>
+            <div id="notifList" style="flex:1;overflow-y:auto;min-height:100px;">
+                <div style="text-align:center;padding:30px 0;color:#a0aec0;font-size:0.85rem;">No transactions yet</div>
+            </div>
+            <div class="modal-actions" style="flex-shrink:0;margin-top:10px;">
+                <button class="modal-btn modal-btn-confirm" id="notifDone" style="width:100%;background:linear-gradient(135deg,#00f2fe,#4facfe);color:white;">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <nav class="bottom-navbar">
+        <a href="dashborad.html" class="nav-tab">
+            <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+            <span>Home</span>
+        </a>
+        <a href="invest.html" class="nav-tab">
+            <svg viewBox="0 0 24 24"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/></svg>
+            <span>Invest</span>
+        </a>
+        <a href="deposit.html" class="nav-tab center-tab">
+            <svg viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
+        </a>
+        <a href="withdrawal.html" class="nav-tab">
+            <svg viewBox="0 0 24 24"><path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>
+            <span>Withdraw</span>
+        </a>
+        <a href="index.html" class="nav-tab active">
+            <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5-4-8-4z"/></svg>
+            <span>Account</span>
+        </a>
+    </nav>
+
+    <script>
+        function showToast(message, type) {
+            var container = document.getElementById('toastContainer');
+            var icons = { success: '✓', error: '✗', info: 'ℹ' };
+            var toast = document.createElement('div');
+            toast.className = 'toast ' + type;
+            toast.innerHTML = '<span class="toast-icon">' + (icons[type] || '') + '</span>' +
+                '<span>' + message + '</span>' + '<button class="toast-close">&times;</button>';
+            container.appendChild(toast);
+            toast.querySelector('.toast-close').addEventListener('click', function () {
+                toast.classList.add('removing');
+                setTimeout(function () { toast.remove(); }, 260);
+            });
+            setTimeout(function () {
+                if (toast.parentNode) {
+                    toast.classList.add('removing');
+                    setTimeout(function () { toast.remove(); }, 260);
+                }
+            }, 4000);
+        }
+
+        function copyRefCode() {
+            var code = document.getElementById('infoRefCode').innerText;
+            navigator.clipboard.writeText(code).then(function () {
+                showToast('Referral code copied!', 'success');
+            }).catch(function () {
+                showToast('Failed to copy', 'error');
+            });
+        }
+
+        // Load data from account system
+        function getAccounts() {
+            try { return JSON.parse(localStorage.getItem('tf_accounts')) || {}; }
+            catch(e) { return {}; }
+        }
+
+        function getSession() {
+            return localStorage.getItem('tf_session') || '';
+        }
+
+        function saveAccounts(accounts) {
+            localStorage.setItem('tf_accounts', JSON.stringify(accounts));
+        }
+
+        function processDailyIncome() {
+            var phone = getSession();
+            if (!phone) return;
+            var accounts = getAccounts();
+            var account = accounts[phone];
+            if (!account || !account.investments) return;
+            var changed = false;
+            var now = Date.now();
+            for (var i = 0; i < account.investments.length; i++) {
+                var inv = account.investments[i];
+                if (!inv.active) continue;
+                var elapsed = now - inv.lastPayout;
+                var cycles = Math.floor(elapsed / (24 * 60 * 60 * 1000));
+                if (cycles > 0) {
+                    var credit = cycles * inv.dailyIncome;
+                    account.balance = (account.balance || 0) + credit;
+                    inv.lastPayout = inv.lastPayout + cycles * (24 * 60 * 60 * 1000);
+                    if (!account.transactions) account.transactions = [];
+                    account.transactions.push({
+                        type: 'deposit',
+                        amount: credit,
+                        date: new Date().toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
+                        note: 'Daily income from ' + inv.plan
+                    });
+                    changed = true;
+                }
+            }
+            if (changed) {
+                accounts[phone] = account;
+                saveAccounts(accounts);
+            }
+        }
+
+        window.onload = function () {
+            processDailyIncome();
+            var phone = getSession();
+            var accounts = getAccounts();
+            var account = accounts[phone];
+
+            if (!account) {
+                window.location.href = 'trustfund.html';
+                return;
+            }
+
+            document.getElementById('displayName').innerText = account.username;
+            document.getElementById('displayAvatar').innerText = account.username.slice(0, 2).toUpperCase();
+            document.getElementById('displayPhone').innerText = '+234 ' + phone;
+            document.getElementById('infoName').innerText = account.username;
+            document.getElementById('infoPhone').innerText = '+234 ' + phone;
+            document.getElementById('infoRefCode').innerText = account.refCode || '------';
+        };
+
+        // ---- Logout modal ----
+        var logoutModal = document.getElementById('logoutModal');
+        var logoutCancel = document.getElementById('logoutCancel');
+        var logoutConfirm = document.getElementById('logoutConfirm');
+
+        function showLogoutModal() {
+            logoutModal.classList.add('active');
+        }
+
+        logoutCancel.addEventListener('click', function () {
+            logoutModal.classList.remove('active');
+        });
+
+        logoutModal.addEventListener('click', function (e) {
+            if (e.target === logoutModal) logoutModal.classList.remove('active');
+        });
+
+        logoutConfirm.addEventListener('click', function () {
+            logoutModal.classList.remove('active');
+            showToast('Logging out...', 'info');
+            setTimeout(function () {
+                localStorage.removeItem('tf_session');
+                window.location.href = 'trustfund.html';
+            }, 1000);
+        });
+
+        // ---- Change Password modal ----
+        var changePwModal = document.getElementById('changePasswordModal');
+        var changePwCancel = document.getElementById('changePwCancel');
+        var changePwConfirm = document.getElementById('changePwConfirm');
+
+        document.querySelectorAll('.action-item')[1].addEventListener('click', function () {
+            document.getElementById('currentPassword').value = '';
+            document.getElementById('newPassword').value = '';
+            document.getElementById('confirmNewPassword').value = '';
+            changePwModal.classList.add('active');
+        });
+
+        changePwCancel.addEventListener('click', function () {
+            changePwModal.classList.remove('active');
+        });
+
+        changePwModal.addEventListener('click', function (e) {
+            if (e.target === changePwModal) changePwModal.classList.remove('active');
+        });
+
+        changePwConfirm.addEventListener('click', function () {
+            var current = document.getElementById('currentPassword').value.trim();
+            var newPw = document.getElementById('newPassword').value.trim();
+            var confirmPw = document.getElementById('confirmNewPassword').value.trim();
+
+            if (!current || !newPw || !confirmPw) {
+                showToast('Please fill in all fields', 'error');
+                return;
+            }
+
+            var phone = getSession();
+            var accounts = getAccounts();
+            var account = accounts[phone];
+
+            if (!account) {
+                showToast('Account not found', 'error');
+                return;
+            }
+
+            if (current !== account.password) {
+                showToast('Current password is incorrect', 'error');
+                return;
+            }
+
+            if (newPw.length < 4) {
+                showToast('New password must be at least 4 characters', 'error');
+                return;
+            }
+
+            if (newPw !== confirmPw) {
+                showToast('New passwords do not match', 'error');
+                return;
+            }
+
+            account.password = newPw;
+            accounts[phone] = account;
+            saveAccounts(accounts);
+            changePwModal.classList.remove('active');
+            showToast('Password changed successfully!', 'success');
+        });
+
+        // ---- Notifications modal ----
+        var notifModal = document.getElementById('notifModal');
+        var notifDone = document.getElementById('notifDone');
+
+        document.querySelectorAll('.action-item')[2].addEventListener('click', function () {
+            var phone = getSession();
+            var accounts = getAccounts();
+            var account = accounts[phone];
+            var list = document.getElementById('notifList');
+
+            var txns = account && account.transactions ? account.transactions : [];
+
+            if (txns.length === 0) {
+                list.innerHTML = '<div style="text-align:center;padding:30px 0;color:#a0aec0;font-size:0.85rem;">No transactions yet</div>';
+            } else {
+                var html = '';
+                for (var i = txns.length - 1; i >= 0; i--) {
+                    var t = txns[i];
+                    var icon = t.type === 'deposit' ? '💰' : '💸';
+                    var color = t.type === 'deposit' ? '#38a169' : '#e53e3e';
+                    var label = t.type === 'deposit' ? 'Deposit' : 'Withdrawal';
+                    html += '<div style="display:flex;align-items:center;padding:12px 0;border-bottom:1px solid #f1f5f9;">' +
+                        '<div style="width:36px;height:36px;border-radius:50%;background:' + (t.type === 'deposit' ? '#e6fffa' : '#fff5f5') + ';display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;margin-right:12px;">' + icon + '</div>' +
+                        '<div style="flex:1;">' +
+                        '<div style="font-size:0.85rem;font-weight:600;">' + label + '</div>' +
+                        '<div style="font-size:0.72rem;color:#718096;">' + t.date + '</div>' +
+                        '</div>' +
+                        '<div style="font-size:0.85rem;font-weight:700;color:' + color + ';">' + (t.type === 'deposit' ? '+' : '-') + '₦' + Number(t.amount).toLocaleString('en-US', {minimumFractionDigits: 2}) + '</div>' +
+                        '</div>';
+                }
+                list.innerHTML = html;
+            }
+
+            notifModal.classList.add('active');
+        });
+
+        notifDone.addEventListener('click', function () {
+            notifModal.classList.remove('active');
+        });
+
+        notifModal.addEventListener('click', function (e) {
+            if (e.target === notifModal) notifModal.classList.remove('active');
+        });
+    </script>
+
+</body>
+</html>

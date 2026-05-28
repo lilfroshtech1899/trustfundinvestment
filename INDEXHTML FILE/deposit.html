@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trust Funds - Recharge</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f4f7f6;
+            min-height: 100vh;
+            color: #2d3748;
+            padding-bottom: 80px;
+        }
+
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 300;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-width: 360px;
+            width: calc(100% - 40px);
+        }
+
+        .toast {
+            padding: 14px 16px;
+            border-radius: 10px;
+            color: #fff;
+            font-size: 0.85rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+            animation: toastIn 0.3s ease;
+        }
+
+        .toast.success { background: #38a169; }
+        .toast.error { background: #e53e3e; }
+        .toast.info { background: #4facfe; }
+        .toast-icon { font-size: 1.1rem; flex-shrink: 0; }
+
+        .toast-close {
+            margin-left: auto;
+            background: none;
+            border: none;
+            color: rgba(255,255,255,0.7);
+            cursor: pointer;
+            font-size: 1rem;
+            padding: 0 0 0 8px;
+        }
+
+        @keyframes toastIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes toastOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+        .toast.removing { animation: toastOut 0.25s ease forwards; }
+
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 200;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-overlay.active { display: flex; }
+
+        .modal-box {
+            background: #fff;
+            border-radius: 16px;
+            padding: 28px 24px 24px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+            animation: modalIn 0.25s ease;
+        }
+
+        @keyframes modalIn {
+            from { transform: scale(0.92) translateY(10px); opacity: 0; }
+            to { transform: scale(1) translateY(0); opacity: 1; }
+        }
+
+        .modal-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: #ebf8ff;
+            color: #4facfe;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            margin: 0 auto 12px;
+        }
+
+        .modal-title {
+            text-align: center;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #1a202c;
+            margin-bottom: 4px;
+        }
+
+        .modal-subtitle {
+            text-align: center;
+            font-size: 0.8rem;
+            color: #718096;
+            margin-bottom: 20px;
+        }
+
+        .modal-details {
+            background: #f7fafc;
+            border-radius: 10px;
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+
+        .modal-detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            font-size: 0.85rem;
+        }
+
+        .modal-detail-row:not(:last-child) { border-bottom: 1px solid #edf2f7; }
+        .modal-detail-label { color: #718096; }
+        .modal-detail-value { font-weight: 600; color: #1a202c; }
+
+        .modal-actions { display: flex; gap: 10px; }
+
+        .modal-btn {
+            flex: 1;
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: opacity 0.2s ease;
+        }
+
+        .modal-btn:hover { opacity: 0.85; }
+        .modal-btn-cancel { background: #edf2f7; color: #4a5568; }
+        .modal-btn-confirm {
+            background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+            color: #fff;
+        }
+
+        /* Header */
+        .nav-header {
+            background: #ffffff;
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            border-bottom: 1px solid #e2e8f0;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: #4a5568;
+            margin-right: 12px;
+            text-decoration: none;
+            line-height: 1;
+        }
+
+        .page-title {
+            flex: 1;
+            text-align: center;
+            font-size: 1.05rem;
+            font-weight: 700;
+            text-transform: capitalize;
+            color: #1a202c;
+        }
+
+        .user-avatar {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #00f2fe, #4facfe);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-weight: 700;
+            font-size: 0.85rem;
+            margin-left: 12px;
+            flex-shrink: 0;
+        }
+
+        .user-name {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #2d3748;
+            margin-left: 8px;
+            white-space: nowrap;
+        }
+
+        .header-right { display: flex; align-items: center; }
+
+        /* Balance Card */
+        .balance-card {
+            background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
+            border-radius: 12px;
+            padding: 18px;
+            margin-bottom: 22px;
+            color: #fff;
+        }
+
+        .balance-label {
+            font-size: 0.75rem;
+            color: #a0aec0;
+            font-weight: 500;
+            margin-bottom: 3px;
+        }
+
+        .balance-amount {
+            font-size: 1.6rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+
+        .balance-amount span {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #a0aec0;
+        }
+
+        .balance-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .balance-meta-item {
+            font-size: 0.7rem;
+            color: #a0aec0;
+        }
+
+        .balance-meta-item strong { color: #fff; font-weight: 600; }
+
+        .trust-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.65rem;
+            color: #68d391;
+            background: rgba(104, 211, 145, 0.15);
+            padding: 4px 10px;
+            border-radius: 20px;
+        }
+
+        /* Form */
+        .form-container {
+            padding: 20px 16px;
+            max-width: 480px;
+            margin: 0 auto;
+        }
+
+        .form-group { margin-bottom: 20px; }
+
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #4a5568;
+            margin-bottom: 6px;
+        }
+
+        .input-wrapper {
+            display: flex;
+            align-items: center;
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            padding: 0 16px;
+            transition: border-color 0.2s ease;
+        }
+
+        .input-wrapper:focus-within {
+            border-color: #4facfe;
+            box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.1);
+        }
+
+        .input-wrapper.input-error {
+            border-color: #e53e3e;
+        }
+
+        .input-wrapper.input-error:focus-within {
+            box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.1);
+        }
+
+        .currency-symbol {
+            font-weight: 600;
+            color: #4a5568;
+            margin-right: 10px;
+            font-size: 1rem;
+        }
+
+        .input-wrapper input {
+            width: 100%;
+            border: none;
+            background: transparent;
+            padding: 14px 0;
+            font-size: 0.95rem;
+            color: #1a202c;
+            outline: none;
+        }
+
+        .input-wrapper input::placeholder { color: #a0aec0; }
+
+        .input-error-message {
+            font-size: 0.75rem;
+            color: #e53e3e;
+            margin-top: 4px;
+            display: none;
+        }
+
+        .input-error-message.visible { display: block; }
+
+        .quick-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-top: 5px;
+        }
+
+        .quick-amount-btn {
+            aspect-ratio: 1;
+            border: 1px solid #cbd5e1;
+            background: #ffffff;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: #4a5568;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+
+        .quick-amount-btn.active {
+            border-color: #ff9f43;
+            color: #ff9f43;
+            background: rgba(255, 159, 67, 0.04);
+        }
+
+        .channel-card {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .channel-info {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .channel-card input[type="radio"] {
+            width: 18px;
+            height: 18px;
+            accent-color: #4facfe;
+        }
+
+        .btn-footer { margin-top: 30px; }
+
+        .submit-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(79, 172, 254, 0.3);
+            transition: transform 0.2s ease, opacity 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .submit-btn:hover:not(:disabled) { opacity: 0.95; }
+        .submit-btn:active:not(:disabled) { transform: scale(0.98); }
+        .submit-btn:disabled { opacity: 0.7; cursor: not-allowed; }
+
+        .submit-btn .spinner {
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+            display: none;
+        }
+
+        .submit-btn.loading .spinner { display: inline-block; }
+        .submit-btn.loading .btn-text { display: none; }
+        .btn-text-loading { display: none; }
+        .submit-btn.loading .btn-text-loading { display: inline; }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .notes-section { margin-bottom: 28px; }
+
+        .notes-heading {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 10px;
+            padding-left: 8px;
+            border-left: 3px solid #ffb020;
+        }
+
+        .notes-list { list-style: none; }
+
+        .notes-list li {
+            font-size: 0.78rem;
+            color: #718096;
+            line-height: 1.6;
+            margin-bottom: 5px;
+        }
+
+        /* Floating */
+        .floating-actions {
+            position: fixed;
+            right: 15px;
+            top: 40%;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            z-index: 100;
+        }
+
+        .floating-btn {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            text-decoration: none;
+            font-size: 1.1rem;
+            transition: transform 0.2s ease;
+        }
+
+        .floating-btn:hover { transform: scale(1.1); }
+        .floating-btn.support { background: #ff9f43; }
+        .floating-btn.telegram { background: #29b6f6; }
+        .floating-btn.records { background: #4facfe; }
+
+        /* Bottom Nav */
+        .bottom-navbar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 65px;
+            background: #ffffff;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 99;
+        }
+
+        .nav-tab {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            color: #a0aec0;
+            font-size: 0.7rem;
+            font-weight: 500;
+        }
+
+        .nav-tab.active { color: #4facfe; }
+
+        .nav-tab svg {
+            width: 22px;
+            height: 22px;
+            fill: currentColor;
+            margin-bottom: 3px;
+        }
+
+        .nav-tab.center-tab {
+            position: relative;
+            top: -15px;
+            background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+            width: 54px;
+            height: 54px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white !important;
+            box-shadow: 0 4px 12px rgba(79, 172, 254, 0.4);
+        }
+
+        .nav-tab.center-tab svg { width: 26px; height: 26px; }
+
+        @media (max-width: 640px) {
+            .floating-actions {
+                right: 10px;
+                top: auto;
+                bottom: 80px;
+                flex-direction: row;
+                gap: 8px;
+            }
+            .floating-btn { width: 38px; height: 38px; font-size: 1rem; }
+            .balance-amount { font-size: 1.4rem; }
+            .header-right .user-name { display: none; }
+        }
+
+        @media (max-width: 400px) {
+            .balance-card { padding: 14px; }
+            .balance-amount { font-size: 1.2rem; }
+            .quick-grid { gap: 8px; }
+            .quick-amount-btn { font-size: 0.7rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+    <div class="floating-actions">
+        <a href="#" class="floating-btn telegram" title="Telegram">✈️</a>
+        <a href="#" class="floating-btn records" title="Records">📋</a>
+        <a href="#" class="floating-btn support" title="Support">🎧</a>
+    </div>
+
+    <header class="nav-header">
+        <a href="dashborad.html" class="back-btn">❮</a>
+        <div class="page-title">recharge</div>
+        <div class="header-right">
+            <span class="user-name">John Doe</span>
+            <div class="user-avatar">JD</div>
+        </div>
+    </header>
+
+    <main class="form-container">
+
+        <div class="balance-card">
+            <div class="balance-label">Current Balance</div>
+            <div class="balance-amount" id="depositBalance">₦0.00</div>
+            <div class="balance-meta">
+                <div class="balance-meta-item">
+                    Pending: <strong>₦0.00</strong>
+                </div>
+                <div class="trust-badge">✓ Secured Transaction</div>
+            </div>
+        </div>
+
+        <form id="rechargeForm" novalidate>
+
+            <div class="form-group" id="amountGroup">
+                <label>Deposit Amount</label>
+                <div class="input-wrapper" id="amountWrapper">
+                    <span class="currency-symbol">₦</span>
+                    <input type="number" id="depositInput" placeholder="Enter deposit amount" min="100" required>
+                </div>
+                <div class="input-error-message" id="amountError">Please enter a valid amount (min ₦100)</div>
+            </div>
+
+            <div class="form-group">
+                <label>Quick Amount</label>
+                <div class="quick-grid" id="quickGrid">
+                    <div class="quick-amount-btn" data-amount="2000">2,000</div>
+                    <div class="quick-amount-btn" data-amount="2500">2,500</div>
+                    <div class="quick-amount-btn" data-amount="5000">5,000</div>
+                    <div class="quick-amount-btn" data-amount="10000">10,000</div>
+                    <div class="quick-amount-btn" data-amount="20000">20,000</div>
+                    <div class="quick-amount-btn" data-amount="50000">50,000</div>
+                    <div class="quick-amount-btn" data-amount="100000">100,000</div>
+                    <div class="quick-amount-btn" data-amount="200000">200,000</div>
+                    <div class="quick-amount-btn" data-amount="500000">500,000</div>
+                    <div class="quick-amount-btn" data-amount="1000000">1,000,000</div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Payment Channel</label>
+                <div class="channel-card">
+                    <span class="channel-info">Deposit Channel</span>
+                    <input type="radio" name="depositChannel" value="default" checked>
+                </div>
+            </div>
+
+            <section class="notes-section">
+                <div class="notes-heading">Important Notes</div>
+                <ul class="notes-list">
+                    <li>1. Minimum deposit amount is ₦100</li>
+                    <li>2. Deposits are processed instantly</li>
+                    <li>3. Contact support if payment is not credited within 30 minutes</li>
+                </ul>
+            </section>
+
+            <div class="btn-footer">
+                <button type="submit" id="submitBtn" class="submit-btn">
+                    <span class="spinner"></span>
+                    <span class="btn-text">Deposit Now</span>
+                    <span class="btn-text-loading">Processing...</span>
+                </button>
+            </div>
+
+        </form>
+
+    </main>
+
+    <!-- Deposit Modal -->
+    <div class="modal-overlay" id="depositModal">
+        <div class="modal-box">
+            <div id="modalConfirmState">
+                <div class="modal-icon">💰</div>
+                <div class="modal-title">Make Payment</div>
+                <div class="modal-subtitle">Transfer the exact amount to the account below</div>
+                <div class="modal-details">
+                    <div class="modal-detail-row">
+                        <span class="modal-detail-label">Amount</span>
+                        <span class="modal-detail-value" id="modalAmount">-</span>
+                    </div>
+                    <div class="modal-detail-row">
+                        <span class="modal-detail-label">Bank Name</span>
+                        <span class="modal-detail-value" style="color:#4facfe;font-weight:700;">OPAY</span>
+                    </div>
+                    <div class="modal-detail-row">
+                        <span class="modal-detail-label">Account Number</span>
+                        <span class="modal-detail-value" style="font-size:1.1rem;letter-spacing:3px;font-weight:800;color:#1a202c;">7069681553</span>
+                    </div>
+                    <div class="modal-detail-row">
+                        <span class="modal-detail-label">Account Name</span>
+                        <span class="modal-detail-value">FAVOUR OBIAGWU CHIBUIKE</span>
+                    </div>
+                </div>
+                <div class="modal-timer" id="countdownDisplay" style="text-align:center;padding:10px 0 16px;font-size:0.85rem;color:#718096;">
+                    <span>Auto-confirm in </span>
+                    <span id="countdownTimer" style="font-weight:800;font-size:1.2rem;color:#e53e3e;">3:00</span>
+                </div>
+                <div class="modal-actions">
+                    <button class="modal-btn modal-btn-cancel" id="modalCancel">Cancel</button>
+                    <button class="modal-btn modal-btn-confirm" id="modalConfirm">I've Made the Payment</button>
+                </div>
+            </div>
+            <div id="modalSuccessState" style="display:none;">
+                <div class="modal-icon" style="background:#e6fffa;color:#38a169;">✓</div>
+                <div class="modal-title" id="successTitle">Deposit Successful</div>
+                <div class="modal-subtitle" id="successSubtitle">₦0.00 has been credited to your account.</div>
+                <div class="modal-actions">
+                    <button class="modal-btn modal-btn-confirm" id="modalDone" style="width:100%;">Go to Dashboard</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <nav class="bottom-navbar">
+        <a href="dashborad.html" class="nav-tab">
+            <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+            <span>Home</span>
+        </a>
+        <a href="invest.html" class="nav-tab">
+            <svg viewBox="0 0 24 24"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/></svg>
+            <span>Invest</span>
+        </a>
+        <a href="deposit.html" class="nav-tab center-tab">
+            <svg viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
+        </a>
+        <a href="withdrawal.html" class="nav-tab">
+            <svg viewBox="0 0 24 24"><path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>
+            <span>Withdraw</span>
+        </a>
+        <a href="index.html" class="nav-tab">
+            <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5-4-8-4z"/></svg>
+            <span>Account</span>
+        </a>
+    </nav>
+
+    <script>
+        function getAccounts() {
+            try { return JSON.parse(localStorage.getItem('tf_accounts')) || {}; }
+            catch(e) { return {}; }
+        }
+
+        function getSession() {
+            return localStorage.getItem('tf_session') || '';
+        }
+
+        function saveAccounts(accounts) {
+            localStorage.setItem('tf_accounts', JSON.stringify(accounts));
+        }
+
+        function processDailyIncome() {
+            var phone = getSession();
+            if (!phone) return;
+            var accounts = getAccounts();
+            var account = accounts[phone];
+            if (!account || !account.investments) return;
+            var changed = false;
+            var now = Date.now();
+            for (var i = 0; i < account.investments.length; i++) {
+                var inv = account.investments[i];
+                if (!inv.active) continue;
+                var elapsed = now - inv.lastPayout;
+                var cycles = Math.floor(elapsed / (24 * 60 * 60 * 1000));
+                if (cycles > 0) {
+                    var credit = cycles * inv.dailyIncome;
+                    account.balance = (account.balance || 0) + credit;
+                    inv.lastPayout = inv.lastPayout + cycles * (24 * 60 * 60 * 1000);
+                    if (!account.transactions) account.transactions = [];
+                    account.transactions.push({
+                        type: 'deposit',
+                        amount: credit,
+                        date: new Date().toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
+                        note: 'Daily income from ' + inv.plan
+                    });
+                    changed = true;
+                }
+            }
+            if (changed) {
+                accounts[phone] = account;
+                saveAccounts(accounts);
+            }
+        }
+
+        (function() {
+            processDailyIncome();
+            var phone = getSession();
+            var accounts = getAccounts();
+            var account = accounts[phone];
+            if (account) {
+                document.getElementById('depositBalance').innerText = '₦' + (account.balance || 0).toLocaleString('en-US', {minimumFractionDigits: 2});
+            } else {
+                window.location.href = 'trustfund.html';
+            }
+        })();
+
+        function showToast(message, type) {
+            var container = document.getElementById('toastContainer');
+            var icons = { success: '✓', error: '✗', info: 'ℹ' };
+            var toast = document.createElement('div');
+            toast.className = 'toast ' + type;
+            toast.innerHTML = '<span class="toast-icon">' + (icons[type] || '') + '</span>' +
+                '<span>' + message + '</span>' + '<button class="toast-close">&times;</button>';
+            container.appendChild(toast);
+            toast.querySelector('.toast-close').addEventListener('click', function () {
+                toast.classList.add('removing');
+                setTimeout(function () { toast.remove(); }, 260);
+            });
+            setTimeout(function () {
+                if (toast.parentNode) {
+                    toast.classList.add('removing');
+                    setTimeout(function () { toast.remove(); }, 260);
+                }
+            }, 4000);
+        }
+
+        var depositInput = document.getElementById('depositInput');
+        var amountError = document.getElementById('amountError');
+        var amountWrapper = document.getElementById('amountWrapper');
+        var quickBtns = document.querySelectorAll('.quick-amount-btn');
+        var submitBtn = document.getElementById('submitBtn');
+        var modalOverlay = document.getElementById('depositModal');
+        var modalCancel = document.getElementById('modalCancel');
+        var modalConfirm = document.getElementById('modalConfirm');
+        var modalDone = document.getElementById('modalDone');
+        var modalAmount = document.getElementById('modalAmount');
+        var modalConfirmState = document.getElementById('modalConfirmState');
+        var modalSuccessState = document.getElementById('modalSuccessState');
+
+        // Quick amount selection
+        quickBtns.forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                quickBtns.forEach(function (b) { b.classList.remove('active'); });
+                btn.classList.add('active');
+                depositInput.value = btn.getAttribute('data-amount');
+                amountWrapper.classList.remove('input-error');
+                amountError.classList.remove('visible');
+            });
+        });
+
+        depositInput.addEventListener('input', function () {
+            quickBtns.forEach(function (b) { b.classList.remove('active'); });
+            if (amountWrapper.classList.contains('input-error')) {
+                validateAmount();
+            }
+        });
+
+        function validateAmount() {
+            var val = parseFloat(depositInput.value);
+            if (!depositInput.value || isNaN(val) || val < 100) {
+                amountWrapper.classList.add('input-error');
+                amountError.classList.add('visible');
+                return false;
+            } else {
+                amountWrapper.classList.remove('input-error');
+                amountError.classList.remove('visible');
+                return true;
+            }
+        }
+
+        var countdownTimer = null;
+        var countdownSeconds = 0;
+
+        function startCountdown(seconds) {
+            countdownSeconds = seconds;
+            updateCountdownDisplay();
+            if (countdownTimer) clearInterval(countdownTimer);
+            countdownTimer = setInterval(function () {
+                countdownSeconds--;
+                updateCountdownDisplay();
+                if (countdownSeconds <= 0) {
+                    clearInterval(countdownTimer);
+                    countdownTimer = null;
+                    completeDeposit();
+                }
+            }, 1000);
+        }
+
+        function updateCountdownDisplay() {
+            var m = Math.floor(countdownSeconds / 60);
+            var s = countdownSeconds % 60;
+            document.getElementById('countdownTimer').textContent = m + ':' + (s < 10 ? '0' : '') + s;
+            if (countdownSeconds <= 10) {
+                document.getElementById('countdownTimer').style.color = '#e53e3e';
+            }
+        }
+
+        function stopCountdown() {
+            if (countdownTimer) {
+                clearInterval(countdownTimer);
+                countdownTimer = null;
+            }
+        }
+
+        function completeDeposit() {
+            var amount = parseFloat(depositInput.value) || 0;
+            var phone = getSession();
+            var accounts = getAccounts();
+            var account = accounts[phone];
+            if (account) {
+                account.balance = (account.balance || 0) + amount;
+                if (!account.transactions) account.transactions = [];
+                account.transactions.push({
+                    type: 'deposit',
+                    amount: amount,
+                    date: new Date().toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+                });
+                accounts[phone] = account;
+                saveAccounts(accounts);
+                document.getElementById('depositBalance').innerText = '₦' + account.balance.toLocaleString('en-US', {minimumFractionDigits: 2});
+            }
+            document.getElementById('successTitle').textContent = 'Deposit Successful';
+            document.getElementById('successSubtitle').textContent = '₦' + amount.toLocaleString('en-US', {minimumFractionDigits: 2}) + ' has been credited to your account.';
+            modalConfirmState.style.display = 'none';
+            modalSuccessState.style.display = 'block';
+        }
+
+        document.getElementById('rechargeForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            if (!validateAmount()) {
+                showToast('Please enter a valid deposit amount', 'error');
+                return;
+            }
+            modalAmount.textContent = '₦' + parseFloat(depositInput.value).toLocaleString('en-US', { minimumFractionDigits: 2 });
+            modalConfirmState.style.display = 'block';
+            modalSuccessState.style.display = 'none';
+            modalOverlay.classList.add('active');
+            startCountdown(180);
+        });
+
+        function closeModal() {
+            stopCountdown();
+            modalOverlay.classList.remove('active');
+            modalConfirmState.style.display = 'block';
+            modalSuccessState.style.display = 'none';
+            depositInput.value = '';
+            quickBtns.forEach(function (b) { b.classList.remove('active'); });
+        }
+
+        modalCancel.addEventListener('click', closeModal);
+
+        modalOverlay.addEventListener('click', function (e) {
+            if (e.target === modalOverlay) closeModal();
+        });
+
+        modalConfirm.addEventListener('click', function () {
+            completeDeposit();
+        });
+
+        modalDone.addEventListener('click', function () {
+            closeModal();
+            showToast('Deposit successful!', 'success');
+        });
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trust Funds - Investment</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f4f7f6;
+            min-height: 100vh;
+            color: #2d3748;
+            padding-bottom: 80px;
+        }
+
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 300;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-width: 360px;
+            width: calc(100% - 40px);
+        }
+
+        .toast {
+            padding: 14px 16px;
+            border-radius: 10px;
+            color: #fff;
+            font-size: 0.85rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+            animation: toastIn 0.3s ease;
+        }
+
+        .toast.success { background: #38a169; }
+        .toast.error { background: #e53e3e; }
+        .toast.info { background: #4facfe; }
+        .toast-icon { font-size: 1.1rem; flex-shrink: 0; }
+
+        .toast-close {
+            margin-left: auto;
+            background: none;
+            border: none;
+            color: rgba(255,255,255,0.7);
+            cursor: pointer;
+            font-size: 1rem;
+            padding: 0 0 0 8px;
+        }
+
+        @keyframes toastIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes toastOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+        .toast.removing { animation: toastOut 0.25s ease forwards; }
+
+        .header-banner {
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+            color: white;
+            padding: 24px 20px;
+            text-align: center;
+            border-bottom-left-radius: 20px;
+            border-bottom-right-radius: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-banner h2 {
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+
+        .header-banner p {
+            font-size: 0.8rem;
+            color: #a0aec0;
+            margin-top: 4px;
+        }
+
+        .tab-nav-container {
+            max-width: 480px;
+            margin: -15px auto 20px;
+            padding: 0 15px;
+        }
+
+        .tab-menu {
+            background: #ffffff;
+            border-radius: 12px;
+            display: flex;
+            padding: 6px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        .tab-btn {
+            flex: 1;
+            background: none;
+            border: none;
+            padding: 10px 5px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #718096;
+            cursor: pointer;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+            position: relative;
+            transition: all 0.2s ease;
+        }
+
+        .tab-btn.active {
+            color: #4facfe;
+            background: rgba(79, 172, 254, 0.05);
+        }
+
+        .hot-badge {
+            position: absolute;
+            top: -12px;
+            right: 5px;
+            background: #ff3366;
+            color: white;
+            font-size: 0.6rem;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-weight: 800;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.08); }
+            100% { transform: scale(1); }
+        }
+
+        .main-content {
+            padding: 0 15px;
+            max-width: 480px;
+            margin: 0 auto;
+        }
+
+        .view-panel { display: none; }
+        .view-panel.active-panel { display: block; }
+
+        .product-card {
+            background: #ffffff;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+            padding: 18px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+            transition: transform 0.2s ease;
+        }
+
+        .product-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .product-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #1a202c;
+            margin-bottom: 12px;
+            border-bottom: 1px dashed #e2e8f0;
+            padding-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .product-title span { color: #ff9f43; }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+
+        .info-item { display: flex; flex-direction: column; }
+
+        .info-label {
+            font-size: 0.72rem;
+            color: #718096;
+            margin-bottom: 2px;
+        }
+
+        .info-value {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #2d3748;
+        }
+
+        .invest-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+            color: white;
+            border: none;
+            padding: 11px;
+            border-radius: 25px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(79, 172, 254, 0.2);
+            transition: transform 0.2s ease, opacity 0.2s ease;
+        }
+
+        .invest-btn:hover { opacity: 0.95; }
+        .invest-btn:active { transform: scale(0.98); }
+
+        .empty-state-box {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 40px 20px;
+            text-align: center;
+            border: 1px dashed #cbd5e1;
+            margin-top: 10px;
+        }
+
+        .empty-icon {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 12px;
+            opacity: 0.4;
+        }
+
+        .empty-icon svg { width: 100%; height: 100%; fill: #a0aec0; }
+
+        .empty-text {
+            color: #718096;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .floating-actions {
+            position: fixed;
+            right: 15px;
+            top: 40%;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            z-index: 100;
+        }
+
+        .floating-btn {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            text-decoration: none;
+            font-size: 1.1rem;
+            transition: transform 0.2s ease;
+        }
+
+        .floating-btn:hover { transform: scale(1.1); }
+        .floating-btn.support { background: #ff9f43; }
+        .floating-btn.telegram { background: #29b6f6; }
+        .floating-btn.records { background: #4facfe; }
+
+        .bottom-navbar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 65px;
+            background: #ffffff;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 99;
+        }
+
+        .nav-tab {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            color: #a0aec0;
+            font-size: 0.7rem;
+            font-weight: 500;
+        }
+
+        .nav-tab.active { color: #4facfe; }
+
+        .nav-tab svg {
+            width: 22px;
+            height: 22px;
+            fill: currentColor;
+            margin-bottom: 3px;
+        }
+
+        .nav-tab.center-tab {
+            position: relative;
+            top: -15px;
+            background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+            width: 54px;
+            height: 54px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white !important;
+            box-shadow: 0 4px 12px rgba(79, 172, 254, 0.4);
+        }
+
+        .nav-tab.center-tab svg { width: 26px; height: 26px; }
+
+        /* Modal styles */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 200;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal-box {
+            background: #fff;
+            border-radius: 16px;
+            padding: 28px 24px 24px;
+            width: 100%;
+            max-width: 380px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+            animation: modalIn 0.25s ease;
+            text-align: center;
+        }
+        @keyframes modalIn {
+            from { transform: scale(0.92) translateY(10px); opacity: 0; }
+            to { transform: scale(1) translateY(0); opacity: 1; }
+        }
+        .modal-icon { font-size: 2.5rem; margin-bottom: 12px; }
+        .modal-title { font-size: 1.1rem; font-weight: 700; color: #1a202c; margin-bottom: 6px; }
+        .modal-subtitle { font-size: 0.82rem; color: #718096; margin-bottom: 24px; }
+        .modal-actions { display: flex; gap: 10px; }
+        .modal-btn {
+            flex: 1;
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: opacity 0.2s ease;
+        }
+        .modal-btn:hover { opacity: 0.85; }
+        .modal-btn-cancel { background: #edf2f7; color: #4a5568; }
+        .modal-btn-confirm { background: linear-gradient(135deg,#00f2fe,#4facfe); color: #fff; }
+        .modal-detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 0.85rem;
+        }
+        .modal-detail-label { color: #718096; }
+        .modal-detail-value { font-weight: 700; color: #1a202c; }
+
+        /* Activity investment card */
+        .active-invest-card {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 14px;
+            border: 1px solid #e2e8f0;
+        }
+        .active-invest-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .active-invest-name { font-size: 0.9rem; font-weight: 700; }
+        .active-invest-status {
+            font-size: 0.7rem;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-weight: 600;
+        }
+        .active-invest-status.active { background: #e6fffa; color: #38a169; }
+        .active-invest-status.completed { background: #ebf8ff; color: #4facfe; }
+        .progress-bar {
+            height: 6px;
+            background: #edf2f7;
+            border-radius: 3px;
+            margin: 8px 0;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00f2fe, #4facfe);
+            border-radius: 3px;
+            transition: width 0.5s ease;
+        }
+        .active-invest-stats {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            color: #718096;
+            margin-top: 4px;
+        }
+        .active-invest-stats span { font-weight: 600; color: #2d3748; }
+
+        @media (max-width: 640px) {
+            .floating-actions {
+                right: 10px;
+                top: auto;
+                bottom: 80px;
+                flex-direction: row;
+                gap: 8px;
+            }
+            .floating-btn { width: 38px; height: 38px; font-size: 1rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+    <div class="floating-actions">
+        <a href="#" class="floating-btn telegram" title="Telegram">✈️</a>
+        <a href="#" class="floating-btn records" title="Records">📋</a>
+        <a href="#" class="floating-btn support" title="Support">🎧</a>
+    </div>
+
+    <div class="header-banner">
+        <h2>Investment Products</h2>
+        <p>Choose your plan and start earning daily</p>
+    </div>
+
+    <div class="tab-nav-container">
+        <div class="tab-menu">
+            <button class="tab-btn active" onclick="switchPanel('daily-panel', this)">
+                <span>📊 Daily</span>
+            </button>
+            <button class="tab-btn" onclick="switchPanel('vip-panel', this)">
+                <span>💎 VIP</span>
+            </button>
+            <button class="tab-btn" onclick="switchPanel('activity-panel', this)">
+                <span class="hot-badge">HOT 🔥</span>
+                <span>📈 Activity</span>
+            </button>
+        </div>
+    </div>
+
+    <main class="main-content">
+
+        <div id="daily-panel" class="view-panel active-panel">
+
+            <div class="product-card">
+                <div class="product-title">TF Plan - Alpha <span>Level 1</span></div>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="info-label">Investment Amount</span>
+                        <span class="info-value">₦2,000.00</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Daily Income</span>
+                        <span class="info-value">₦500.00</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Cycle Period</span>
+                        <span class="info-value">31 Days</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Total Return</span>
+                        <span class="info-value" style="color: #4facfe;">₦15,500.00</span>
+                    </div>
+                </div>
+                <button class="invest-btn" onclick="handleInvest(2000, 'TF Plan - Alpha')">Invest Now</button>
+            </div>
+
+            <div class="product-card">
+                <div class="product-title">TF Plan - Beta <span>Level 2</span></div>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="info-label">Investment Amount</span>
+                        <span class="info-value">₦5,000.00</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Daily Income</span>
+                        <span class="info-value">₦1,000.00</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Cycle Period</span>
+                        <span class="info-value">31 Days</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Total Return</span>
+                        <span class="info-value" style="color: #4facfe;">₦31,000.00</span>
+                    </div>
+                </div>
+                <button class="invest-btn" onclick="handleInvest(5000, 'TF Plan - Beta')">Invest Now</button>
+            </div>
+
+            <div class="product-card">
+                <div class="product-title">TF Plan - Gamma <span>Level 3</span></div>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="info-label">Investment Amount</span>
+                        <span class="info-value">₦10,000.00</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Daily Income</span>
+                        <span class="info-value">₦2,000.00</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Cycle Period</span>
+                        <span class="info-value">31 Days</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Total Return</span>
+                        <span class="info-value" style="color: #4facfe;">₦62,000.00</span>
+                    </div>
+                </div>
+                <button class="invest-btn" onclick="handleInvest(10000, 'TF Plan - Gamma')">Invest Now</button>
+            </div>
+
+            <div class="product-card">
+                <div class="product-title">TF Plan - Delta <span>Level 4</span></div>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="info-label">Investment Amount</span>
+                        <span class="info-value">₦20,000.00</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Daily Income</span>
+                        <span class="info-value">₦4,200.00</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Cycle Period</span>
+                        <span class="info-value">31 Days</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Total Return</span>
+                        <span class="info-value" style="color: #4facfe;">₦130,200.00</span>
+                    </div>
+                </div>
+                <button class="invest-btn" onclick="handleInvest(20000, 'TF Plan - Delta')">Invest Now</button>
+            </div>
+
+            <div class="product-card">
+                <div class="product-title">TF Plan - Omega <span>Level 5</span></div>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="info-label">Investment Amount</span>
+                        <span class="info-value">₦40,000.00</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Daily Income</span>
+                        <span class="info-value">₦8,800.00</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Cycle Period</span>
+                        <span class="info-value">31 Days</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Total Return</span>
+                        <span class="info-value" style="color: #4facfe;">₦272,800.00</span>
+                    </div>
+                </div>
+                <button class="invest-btn" onclick="handleInvest(40000, 'TF Plan - Omega')">Invest Now</button>
+            </div>
+
+        </div>
+
+        <div id="vip-panel" class="view-panel">
+            <div class="empty-state-box">
+                <div class="empty-text">🔒 Premium VIP Plans unlock at Level 2</div>
+            </div>
+        </div>
+
+        <div id="activity-panel" class="view-panel">
+            <div class="empty-state-box">
+                <div class="empty-icon">
+                    <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+                </div>
+                <div class="empty-text">No active investments yet</div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Confirm Investment Modal -->
+    <div class="modal-overlay" id="investModal">
+        <div class="modal-box">
+            <div class="modal-icon">📈</div>
+            <div class="modal-title">Confirm Investment</div>
+            <div class="modal-subtitle">Review your investment details</div>
+            <div class="modal-details" style="margin-bottom:20px;">
+                <div class="modal-detail-row">
+                    <span class="modal-detail-label">Plan</span>
+                    <span class="modal-detail-value" id="modalPlan">-</span>
+                </div>
+                <div class="modal-detail-row">
+                    <span class="modal-detail-label">Amount</span>
+                    <span class="modal-detail-value" id="modalAmount">-</span>
+                </div>
+                <div class="modal-detail-row">
+                    <span class="modal-detail-label">Daily Income</span>
+                    <span class="modal-detail-value" id="modalDaily">-</span>
+                </div>
+                <div class="modal-detail-row">
+                    <span class="modal-detail-label">Cycle</span>
+                    <span class="modal-detail-value" id="modalCycle">31 Days</span>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="modal-btn modal-btn-cancel" id="investCancel">Cancel</button>
+                <button class="modal-btn modal-btn-confirm" id="investConfirm">Invest Now</button>
+            </div>
+        </div>
+    </div>
+
+    <nav class="bottom-navbar">
+        <a href="dashborad.html" class="nav-tab">
+            <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+            <span>Home</span>
+        </a>
+        <a href="invest.html" class="nav-tab active">
+            <svg viewBox="0 0 24 24"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/></svg>
+            <span>Invest</span>
+        </a>
+        <a href="deposit.html" class="nav-tab center-tab">
+            <svg viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
+        </a>
+        <a href="withdrawal.html" class="nav-tab">
+            <svg viewBox="0 0 24 24"><path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>
+            <span>Withdraw</span>
+        </a>
+        <a href="index.html" class="nav-tab">
+            <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5-4-8-4z"/></svg>
+            <span>Account</span>
+        </a>
+    </nav>
+
+    <script>
+        function showToast(message, type) {
+            var container = document.getElementById('toastContainer');
+            var icons = { success: '✓', error: '✗', info: 'ℹ' };
+            var toast = document.createElement('div');
+            toast.className = 'toast ' + type;
+            toast.innerHTML = '<span class="toast-icon">' + (icons[type] || '') + '</span>' +
+                '<span>' + message + '</span>' + '<button class="toast-close">&times;</button>';
+            container.appendChild(toast);
+            toast.querySelector('.toast-close').addEventListener('click', function () {
+                toast.classList.add('removing');
+                setTimeout(function () { toast.remove(); }, 260);
+            });
+            setTimeout(function () {
+                if (toast.parentNode) {
+                    toast.classList.add('removing');
+                    setTimeout(function () { toast.remove(); }, 260);
+                }
+            }, 4000);
+        }
+
+        // ---- Account helpers ----
+        function getAccounts() {
+            try { return JSON.parse(localStorage.getItem('tf_accounts')) || {}; }
+            catch(e) { return {}; }
+        }
+        function getSession() {
+            return localStorage.getItem('tf_session') || '';
+        }
+        function saveAccounts(a) {
+            localStorage.setItem('tf_accounts', JSON.stringify(a));
+        }
+
+        // ---- Daily income processor ----
+        function processDailyIncome() {
+            var phone = getSession();
+            if (!phone) return;
+            var accounts = getAccounts();
+            var account = accounts[phone];
+            if (!account || !account.investments) return;
+            var changed = false;
+            var now = Date.now();
+            for (var i = 0; i < account.investments.length; i++) {
+                var inv = account.investments[i];
+                if (!inv.active) continue;
+                var elapsed = now - inv.lastPayout;
+                var cycles = Math.floor(elapsed / (24 * 60 * 60 * 1000));
+                if (cycles > 0) {
+                    var credit = cycles * inv.dailyIncome;
+                    account.balance = (account.balance || 0) + credit;
+                    inv.lastPayout = inv.lastPayout + cycles * (24 * 60 * 60 * 1000);
+                    if (!account.transactions) account.transactions = [];
+                    account.transactions.push({
+                        type: 'deposit',
+                        amount: credit,
+                        date: new Date().toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
+                        note: 'Daily income from ' + inv.plan
+                    });
+                    changed = true;
+                }
+            }
+            if (changed) {
+                accounts[phone] = account;
+                saveAccounts(accounts);
+            }
+        }
+
+        // ---- Plan data lookup ----
+        var planData = {
+            'TF Plan - Alpha': { amount: 2000, daily: 500, cycle: 31 },
+            'TF Plan - Beta': { amount: 5000, daily: 1000, cycle: 31 },
+            'TF Plan - Gamma': { amount: 10000, daily: 2000, cycle: 31 },
+            'TF Plan - Delta': { amount: 20000, daily: 4200, cycle: 31 },
+            'TF Plan - Omega': { amount: 40000, daily: 8800, cycle: 31 }
+        };
+
+        var pendingInvest = null;
+
+        function handleInvest(amount, plan) {
+            var phone = getSession();
+            if (!phone) { window.location.href = 'trustfund.html'; return; }
+            var accounts = getAccounts();
+            var account = accounts[phone];
+            if (!account) { window.location.href = 'trustfund.html'; return; }
+
+            var bal = account.balance || 0;
+            if (bal < amount) {
+                showToast('Insufficient balance! Redirecting to deposit...', 'error');
+                setTimeout(function () { window.location.href = '/INDEXHTML FILE/Deposit.html'; }, 1500);
+                return;
+            }
+
+            // Show confirmation modal
+            pendingInvest = { amount: amount, plan: plan };
+            document.getElementById('modalPlan').innerText = plan;
+            document.getElementById('modalAmount').innerText = '₦' + amount.toLocaleString('en-US', {minimumFractionDigits: 2});
+            var pd = planData[plan];
+            document.getElementById('modalDaily').innerText = '₦' + (pd ? pd.daily.toLocaleString('en-US', {minimumFractionDigits: 2}) : '0.00') + '/day';
+            document.getElementById('modalCycle').innerText = (pd ? pd.cycle : 31) + ' Days';
+            document.getElementById('investModal').classList.add('active');
+        }
+
+        // ---- Modal controls ----
+        var investModal = document.getElementById('investModal');
+        document.getElementById('investCancel').addEventListener('click', function () {
+            investModal.classList.remove('active');
+            pendingInvest = null;
+        });
+        investModal.addEventListener('click', function (e) {
+            if (e.target === investModal) { investModal.classList.remove('active'); pendingInvest = null; }
+        });
+        document.getElementById('investConfirm').addEventListener('click', function () {
+            if (!pendingInvest) return;
+            investModal.classList.remove('active');
+            var amount = pendingInvest.amount;
+            var plan = pendingInvest.plan;
+            pendingInvest = null;
+
+            var phone = getSession();
+            var accounts = getAccounts();
+            var account = accounts[phone];
+            if (!account) return;
+
+            account.balance = Math.max(0, (account.balance || 0) - amount);
+
+            if (!account.investments) account.investments = [];
+            var pd = planData[plan] || { amount: amount, daily: Math.round(amount * 0.25), cycle: 31 };
+            var now = Date.now();
+            account.investments.push({
+                id: 'inv_' + now + '_' + Math.random().toString(36).slice(2, 6),
+                plan: plan,
+                amount: amount,
+                dailyIncome: pd.daily,
+                cycleDays: pd.cycle,
+                investedAt: now,
+                lastPayout: now,
+                active: true
+            });
+
+            if (!account.transactions) account.transactions = [];
+            account.transactions.push({
+                type: 'withdrawal',
+                amount: amount,
+                date: new Date().toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
+                note: 'Investment in ' + plan
+            });
+
+            accounts[phone] = account;
+            saveAccounts(accounts);
+            renderActivityPanel();
+            showToast('Successfully invested in ' + plan + '!', 'success');
+        });
+
+        // ---- Activity panel rendering ----
+        function renderActivityPanel() {
+            var phone = getSession();
+            var accounts = getAccounts();
+            var account = accounts[phone];
+            var container = document.getElementById('activity-panel');
+
+            var invs = account && account.investments ? account.investments : [];
+            var active = invs.filter(function (i) { return i.active; });
+            var completed = invs.filter(function (i) { return !i.active; });
+
+            var html = '';
+
+            if (active.length === 0 && completed.length === 0) {
+                html = '<div class="empty-state-box"><div class="empty-text">No active investments yet</div></div>';
+                container.innerHTML = html;
+                return;
+            }
+
+            if (active.length > 0) {
+                html += '<div style="font-size:0.8rem;font-weight:700;color:#38a169;margin-bottom:10px;">Active Investments</div>';
+                var now = Date.now();
+                for (var i = 0; i < active.length; i++) {
+                    var inv = active[i];
+                    var elapsedDays = (now - inv.investedAt) / (24 * 60 * 60 * 1000);
+                    var progress = Math.min(100, (elapsedDays / inv.cycleDays) * 100);
+                    var daysLeft = Math.max(0, Math.ceil(inv.cycleDays - elapsedDays));
+                    var earnedSoFar = Math.floor((now - inv.lastPayout) / (24 * 60 * 60 * 1000)) * inv.dailyIncome + inv.dailyIncome;
+                    // Actually count how many payouts have been made more accurately
+                    var totalEarned = 0;
+                    if (account.transactions) {
+                        for (var t = 0; t < account.transactions.length; t++) {
+                            if (account.transactions[t].note && account.transactions[t].note.indexOf(inv.plan) > -1 && account.transactions[t].type === 'deposit') {
+                                totalEarned += account.transactions[t].amount;
+                            }
+                        }
+                    }
+
+                    html += '<div class="active-invest-card">' +
+                        '<div class="active-invest-header">' +
+                        '<div class="active-invest-name">' + inv.plan + '</div>' +
+                        '<span class="active-invest-status active">Active</span>' +
+                        '</div>' +
+                        '<div style="display:flex;justify-content:space-between;font-size:0.8rem;margin-bottom:4px;">' +
+                        '<span style="color:#718096;">₦' + inv.amount.toLocaleString() + '</span>' +
+                        '<span style="color:#4facfe;font-weight:600;">+₦' + inv.dailyIncome.toLocaleString() + '/day</span>' +
+                        '</div>' +
+                        '<div class="progress-bar"><div class="progress-fill" style="width:' + progress.toFixed(0) + '%;"></div></div>' +
+                        '<div class="active-invest-stats">' +
+                        '<span>' + daysLeft + ' days left</span>' +
+                        '<span>Earned: ₦' + totalEarned.toLocaleString('en-US', {minimumFractionDigits: 2}) + '</span>' +
+                        '</div>' +
+                        '</div>';
+                }
+            }
+
+            if (completed.length > 0) {
+                html += '<div style="font-size:0.8rem;font-weight:700;color:#4facfe;margin-bottom:10px;margin-top:16px;">Completed</div>';
+                for (var j = 0; j < completed.length; j++) {
+                    var c = completed[j];
+                    html += '<div class="active-invest-card" style="opacity:0.7;">' +
+                        '<div class="active-invest-header">' +
+                        '<div class="active-invest-name">' + c.plan + '</div>' +
+                        '<span class="active-invest-status completed">Completed</span>' +
+                        '</div>' +
+                        '<div style="font-size:0.8rem;color:#718096;">Invested ₦' + c.amount.toLocaleString() + '</div>' +
+                        '</div>';
+                }
+            }
+
+            container.innerHTML = html;
+        }
+
+        function switchPanel(panelId, btn) {
+            document.querySelectorAll('.view-panel').forEach(function (p) {
+                p.classList.remove('active-panel');
+            });
+            document.querySelectorAll('.tab-btn').forEach(function (t) {
+                t.classList.remove('active');
+            });
+            document.getElementById(panelId).classList.add('active-panel');
+            btn.classList.add('active');
+            if (panelId === 'activity-panel') {
+                renderActivityPanel();
+            }
+        }
+
+        // ---- On load ----
+        window.onload = function () {
+            var phone = getSession();
+            if (!phone) { window.location.href = 'trustfund.html'; return; }
+            processDailyIncome();
+        };
+    </script>
+
+</body>
+</html>
