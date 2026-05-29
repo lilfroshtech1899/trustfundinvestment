@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>my learings</title>
+    <link rel="stylesheet" href="./learn.css"> 
+    </head>
+<body>
+ 
+<div class="cart">
+    <p>
+        cart quantity
+    </p>
+    <input id="display" type="text"readonly>
+    
+    <button onclick="console.log(`cart quantity : ${cartquantity}`)" class="grid1">show quantity</button>
+    <button onclick="cartquantity=cartquantity +1;(console.log`cart quantity : ${cartquantity}`)" class="grid2">add to cart</button>
+    <button onclick="cartquantity=0;
+     console.log('cart was reset');
+     console.log(`cart quantity : ${cartquantity}`)" class="grid3">resetcart cart</button>
+</div>
+   
+</body>
+ <script src="./my.js"></script>
+</html>
